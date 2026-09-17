@@ -34,6 +34,7 @@ import EnrolledStudents from './pages/Educator/EnrolledStudents.jsx'
 import CreateAnnouncement from './pages/Educator/CreateAnnouncement.jsx'
 import AllNotificationsPage from './pages/AllNotificationsPage.jsx' // Import AllNotificationsPage
 import AnnouncementDetail from './pages/AnnouncementDetail.jsx' // Import AnnouncementDetail
+import InstructorProfile from './pages/InstructorProfile.jsx'
 
 
 // Animation context
@@ -104,6 +105,7 @@ function App() {
               <Route path="/search" element={userData ? <SearchWithAi /> : <Navigate to="/login" />} />
               <Route path="/notifications" element={<AllNotificationsPage />} />
               <Route path="/announcements/:id" element={<AnnouncementDetail />} />
+              <Route path="/instructor/:instructorId" element={<InstructorProfile />} />
               <Route path="/enrolledstudents/:courseId" element={userData && userData.user && userData.user.role==="educator" ? <EnrolledStudents /> : <Navigate to="/" />} />
             </Routes>
           </AnimatePresence>

@@ -11,24 +11,19 @@ const reviewSchema = new mongoose.Schema({
     ref: 'Course',
     required: true
   },
-  instructor: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
   rating: {
     type: Number,
     required: true,
     min: 1,
     max: 5
   },
-  review: {
+  comment: {
     type: String,
     trim: true
   },
-  isAnonymous: {
-    type: Boolean,
-    default: false
+  reviewedAt: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true,
@@ -43,7 +38,7 @@ reviewSchema.index({ user: 1, course: 1 }, { unique: true });
 reviewSchema.statics.getAverageRating = async function(courseId) {
   const obj = await this.aggregate([
     {
-      $match: { course: courseId }
+      $match: { course: new mongoose.Types.ObjectId(courseId) }
     },
     {
       $group: {
@@ -55,12 +50,14 @@ reviewSchema.statics.getAverageRating = async function(courseId) {
   ]);
 
   try {
-    await this.model('Course').findByIdAndUpdate(courseId, {
-      averageRating: obj[0] ? obj[0].averageRating.toFixed(1) : 0,
-      totalReviews: obj[0] ? obj[0].totalReviews : 0
-    });
+    if (obj[0]) {
+      await mongoose.model('Course').findByIdAndUpdate(courseId, {
+        averageRating: parseFloat(obj[0].averageRating.toFixed(1)),
+        totalReviews: obj[0].totalReviews
+      });
+    }
   } catch (err) {
-    console.error(err);
+    console.error("Error updating course average rating:", err);
   }
 };
 
@@ -69,11 +66,13 @@ reviewSchema.post('save', function() {
   this.constructor.getAverageRating(this.course);
 });
 
-// Call getAverageRating after remove
-reviewSchema.post('remove', function() {
-  this.constructor.getAverageRating(this.course);
+// Call getAverageRating after remove/deleteOne
+reviewSchema.post(['deleteOne', 'findOneAndDelete'], function(doc) {
+  if (doc) {
+    doc.constructor.getAverageRating(doc.course);
+  }
 });
 
-const Review = mongoose.model('Review', reviewSchema);
+const Review = mongoose.models.Review || mongoose.model('Review', reviewSchema);
 
 export default Review;

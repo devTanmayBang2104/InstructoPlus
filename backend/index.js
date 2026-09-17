@@ -15,13 +15,25 @@ dotenv.config();
 
 app.use(express.json());
 app.use(cookieParser());
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://instructoplus.onrender.com",
+  "https://instructo-plus.vercel.app",
+  "https://instructo-plus2.vercel.app"
+];
+
 app.use(cors({
-  https://instructo-plus2.vercel.app/,
-  // origin:"http://localhost:5173",
-  origin:"https://instructoplus.onrender.com",
-  // origin:"https://instructo-plus.vercel.app/",
-  credentials:true
-}))
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Alternatively allow all or specify
+    }
+  },
+  credentials: true
+}));
 const port = process.env.PORT;
 
 
