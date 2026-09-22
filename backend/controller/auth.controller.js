@@ -72,13 +72,13 @@ export const login=async(req,res)=>{
         message:"Invalid credentials"
       })
     }
-    let token=await genToken(user._id);
-    res.cookie("token",token,{
-      httpOnly:true,
-      secure:true, // Set to true for HTTPS in production
-      sameSite:"false", // Required for cross-site cookies with secure: true
-      maxAge:7*24*60*60*1000
-    })
+    let token = await genToken(user._id);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true, // Set to true for HTTPS in production
+      sameSite: "None", // Required for cross-site cookies with secure: true
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
     res.status(200).json({
       success:true,
       message:"User logged in successfully",

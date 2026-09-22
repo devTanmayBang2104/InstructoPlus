@@ -29,6 +29,9 @@ function Home() {
   useEffect(() => {
 
 
+    const heroContainer = document.querySelector('.hero-container');
+    if (!heroContainer) return;
+
     const canvas = document.createElement('canvas');
     canvas.style.position = 'absolute';
     canvas.style.top = '0';
@@ -36,9 +39,10 @@ function Home() {
     canvas.style.zIndex = '0';
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    document.querySelector('.hero-container').appendChild(canvas);
+    heroContainer.appendChild(canvas);
 
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     const particles = [];
     const particleCount = 100;
 
@@ -53,6 +57,7 @@ function Home() {
       });
     }
 
+    let animationId;
     function drawParticles() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
@@ -86,12 +91,13 @@ function Home() {
         });
       });
 
-      requestAnimationFrame(drawParticles);
+      animationId = requestAnimationFrame(drawParticles);
     }
 
     drawParticles();
 
     return () => {
+      cancelAnimationFrame(animationId);
       canvas.remove();
     };
   }, []);

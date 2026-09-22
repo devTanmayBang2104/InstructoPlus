@@ -34,7 +34,7 @@ app.use(cors({
   },
   credentials: true
 }));
-const port = process.env.PORT;
+const port = process.env.PORT || 8000;
 
 
 app.use("/api/auth",authRouter);

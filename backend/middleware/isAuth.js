@@ -8,7 +8,8 @@ const isAuth=async (req,res,next)=>{
       if(!token){
         return res.status(400).json({message:"user doesn't have token"})
       }
-      let verifyToken = jwt.verify(token,process.env.JWT_SECRET)
+      const secret = process.env.JWT_SECRET || "instructoplus_jwt_secret_development_key_123";
+      let verifyToken = jwt.verify(token, secret);
 
       if(!verifyToken){
         return res.status(400).json({message:"user doesn't have valid token"})

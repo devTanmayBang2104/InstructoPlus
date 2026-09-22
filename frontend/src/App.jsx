@@ -5,8 +5,8 @@ import SignUp from './pages/SignUp'
 import Login from './pages/Login'
 import Dashboard from './pages/Educator/Dashboard'
 import Courses from './pages/Educator/Courses'
-// export const serverUrl = "http://localhost:8000"
-export const serverUrl = "https://backend-instructoplus.onrender.com"
+export const serverUrl = "http://localhost:8000"
+// export const serverUrl = "https://backend-instructoplus.onrender.com"
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

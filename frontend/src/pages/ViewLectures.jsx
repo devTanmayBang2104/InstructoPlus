@@ -6,6 +6,36 @@ import { FaArrowLeftLong } from "react-icons/fa6";
 import ReactPlayer from "react-player";
 
 function ViewLecture() {
+  const formatDuration = (duration) => {
+    if (!duration) return "N/A";
+    if (typeof duration === "number") {
+      const mins = Math.floor(duration / 60);
+      const secs = Math.round(duration % 60);
+      return `${mins} min ${secs} sec`;
+    }
+    const str = String(duration).trim();
+    if (str.startsWith("PT")) {
+      const minMatch = str.match(/(\d+)M/);
+      const secMatch = str.match(/(\d+)S/);
+      const mins = minMatch ? parseInt(minMatch[1], 10) : 0;
+      const secs = secMatch ? parseInt(secMatch[1], 10) : 0;
+      return `${mins} min ${secs} sec`;
+    }
+    if (str.includes(":")) {
+      const parts = str.split(":");
+      const mins = parseInt(parts[0], 10) || 0;
+      const secs = parseInt(parts[1], 10) || 0;
+      return `${mins} min ${secs} sec`;
+    }
+    const num = parseFloat(str);
+    if (!isNaN(num)) {
+      const mins = Math.floor(num / 60);
+      const secs = Math.round(num % 60);
+      return `${mins} min ${secs} sec`;
+    }
+    return str;
+  };
+
   const { courseId } = useParams();
   const { courseData } = useSelector((state) => state.course);
   const { userData } = useSelector((state) => state.user);
@@ -243,7 +273,7 @@ function ViewLecture() {
                           </div>
                           <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
                             <FaRegClock className="text-xs" />
-                            <span>{lecture.duration ? `${Math.floor(lecture.duration / 60)} min ${Math.round(lecture.duration % 60)} sec` : "N/A"}</span>
+                            <span>{formatDuration(lecture.duration)}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">

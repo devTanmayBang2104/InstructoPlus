@@ -35,3 +35,9 @@ lerna-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Test Scripts & Artifacts
+selenium_*.py
+selenium_test.py
+test_screenshots/
+
