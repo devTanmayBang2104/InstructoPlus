@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 import User from '../model/user.Model.js'
 import Course from '../model/course.Model.js'
+import Enrollment from '../model/enrollment.Model.js'
 import crypto from 'crypto'
 
 
@@ -16,8 +17,10 @@ export const verifyFreePayment = async (req, res) => {
     const { courseId } = req.body;
     const userId = req.userId;
 
-    const user = await User.findById(userId);
-    const course = await Course.findById(courseId);
+    const [user, course] = await Promise.all([
+      User.findById(userId),
+      Course.findById(courseId)
+    ]);
 
     if (!user || !course) {
       return res.status(400).json({
@@ -26,8 +29,9 @@ export const verifyFreePayment = async (req, res) => {
       });
     }
 
-    // Check if user is already enrolled
-    if (user.enrolledCourses.includes(courseId)) {
+    // Check if user is already enrolled via Enrollment or array
+    const existingEnrollment = await Enrollment.findOne({ userId, courseId });
+    if (existingEnrollment || user.enrolledCourses.some(id => id.toString() === courseId.toString())) {
       return res.status(200).json({
         success: true,
         message: "You are already enrolled in this course",
@@ -35,15 +39,17 @@ export const verifyFreePayment = async (req, res) => {
       });
     }
 
-    // Enroll user in course
-    user.enrolledCourses.push(courseId);
-    await user.save();
-
-    // Add user to course's enrolled students
-    if (!course.enrolledStudents.includes(userId)) {
-      course.enrolledStudents.push(userId);
-      await course.save();
-    }
+    // Atomic relational enrollment creation + dual array sync with $addToSet
+    await Promise.all([
+      Enrollment.create({
+        userId,
+        courseId,
+        amount: 0,
+        status: "active",
+      }),
+      User.findByIdAndUpdate(userId, { $addToSet: { enrolledCourses: courseId } }),
+      Course.findByIdAndUpdate(courseId, { $addToSet: { enrolledStudents: userId } }),
+    ]);
 
     return res.status(200).json({
       success: true,
@@ -104,6 +110,7 @@ export const RazorpayOrder = async (req, res) => {
     return res.status(200).json({
       success: true,
       order,
+      razorpayKey: process.env.RAZORPAY_KEY_ID || "rzp_test_Tn4utk1r0Y1pHH",
     });
   } catch (error) {
     return res.status(500).json({
@@ -131,31 +138,46 @@ try {
                            (!process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_KEY_SECRET === "rzp_test_placeholder_secret");
 
   if (isSignatureValid) {
-    const user=await User.findById(userId);
-    if(!user){
+    const [user, course] = await Promise.all([
+      User.findById(userId),
+      Course.findById(courseId)
+    ]);
+    if (!user || !course) {
       return res.status(400).json({
-        success:false,
-        message:"User not found"
-      })
+        success: false,
+        message: "User or course not found",
+      });
     }
-    if(!user.enrolledCourses.includes(courseId)){
-      user.enrolledCourses.push(courseId);
-      await user.save();
-    }
-    const course=await Course.findById(courseId).populate("lectures");
-    if(course && !course.enrolledStudents.includes(userId)){
-      course.enrolledStudents.push(userId);
-      await course.save();
-    }
+
+    // Upsert relational Enrollment document
+    await Enrollment.findOneAndUpdate(
+      { userId, courseId },
+      {
+        userId,
+        courseId,
+        paymentId: razorpay_payment_id,
+        orderId: razorpay_order_id,
+        amount: course.price || 0,
+        status: "active",
+      },
+      { upsert: true, new: true }
+    );
+
+    // Atomic relational updates to eliminate race conditions
+    await Promise.all([
+      User.findByIdAndUpdate(userId, { $addToSet: { enrolledCourses: courseId } }),
+      Course.findByIdAndUpdate(courseId, { $addToSet: { enrolledStudents: userId } }),
+    ]);
+
     return res.status(200).json({
-      success:true,
-      message:"Payment verified & Enrolled successfully"
-    })
+      success: true,
+      message: "Payment verified & Enrolled successfully",
+    });
   } else {
     return res.status(400).json({
-      success:false,
-      message:"Payment verification failed: Invalid signature"
-    })
+      success: false,
+      message: "Payment verification failed: Invalid signature",
+    });
   }
 
 } catch (error) {

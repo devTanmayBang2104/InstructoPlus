@@ -4,6 +4,7 @@ import googleIcon from '../assets/google.jpg'
 import axios from 'axios'
 import { serverUrl } from '../App'
 import { MdOutlineRemoveRedEye, MdRemoveRedEye } from "react-icons/md";
+import { FaArrowLeft } from "react-icons/fa";
 import { signInWithPopup } from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
 import { auth, provider } from '../../utils/firebase.js'
@@ -16,37 +17,91 @@ import { AnimationContext } from '../App';
 import { useContext } from 'react';
 
 function SignUp() {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [role, setRole] = useState("student")
-  const navigate = useNavigate()
-  const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const dispatch = useDispatch()
+  const [step, setStep] = useState(1);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("student");
+  const [otp, setOtp] = useState("");
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
   const { fadeIn } = useContext(AnimationContext);
 
   const handleSignUp = async () => {
-    setLoading(true)
+    if (!name.trim() || !email.trim() || !password) {
+      return toast.error("Please fill in all required fields");
+    }
+    setLoading(true);
     try {
       const result = await axios.post(
         serverUrl + "/api/auth/signup",
         { name, email, password, role },
         { withCredentials: true }
-      )
-      dispatch(setUserData(result.data))
-      navigate("/")
-      toast.success("Sign Up Successful")
-      setLoading(false)
+      );
+
+      if (result.data.requiresOtp) {
+        setStep(2);
+        if (result.data.devOtp) {
+          setOtp(result.data.devOtp);
+        }
+        toast.success(result.data.message);
+      } else {
+        dispatch(setUserData(result.data.user || result.data));
+        navigate("/");
+        toast.success("Sign Up Successful");
+      }
+      setLoading(false);
     } catch (error) {
-      setLoading(false)
-      toast.error(error.response?.data?.message || "Sign Up Failed")
+      setLoading(false);
+      toast.error(error.response?.data?.message || "Sign Up Failed");
     }
-  }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp || otp.length < 4) {
+      return toast.error("Please enter the 4-digit verification code");
+    }
+    setLoading(true);
+    try {
+      const result = await axios.post(
+        serverUrl + "/api/auth/verify-signup-otp",
+        { email, otp },
+        { withCredentials: true }
+      );
+      dispatch(setUserData(result.data.user));
+      toast.success(result.data.message);
+      setLoading(false);
+      navigate("/");
+    } catch (error) {
+      setLoading(false);
+      toast.error(error.response?.data?.message || "Verification failed");
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setLoading(true);
+    try {
+      const result = await axios.post(
+        serverUrl + "/api/auth/resend-signup-otp",
+        { email },
+        { withCredentials: true }
+      );
+      if (result.data.devOtp) {
+        setOtp(result.data.devOtp);
+      }
+      toast.success(result.data.message);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      toast.error(error.response?.data?.message || "Failed to resend code");
+    }
+  };
 
   const googleSignUp = async () => {
     try {
-      const response = await signInWithPopup(auth, provider)
+      const response = await signInWithPopup(auth, provider);
       const user = response.user;
       const result = await axios.post(
         serverUrl + "/api/auth/googleAuth",
@@ -57,14 +112,14 @@ function SignUp() {
           role
         },
         { withCredentials: true }
-      )
-      dispatch(setUserData(result.data))
-      navigate("/")
-      toast.success("Sign Up Successful")
+      );
+      dispatch(setUserData(result.data.user || result.data));
+      navigate("/");
+      toast.success("Sign Up Successful");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Google Sign Up Failed")
+      toast.error(error.response?.data?.message || "Google Sign Up Failed");
     }
-  }
+  };
 
   return (
     <motion.div
@@ -77,110 +132,184 @@ function SignUp() {
         {/* Left Side - Form */}
         <div className="w-full md:w-1/2 p-8 flex flex-col items-center justify-center">
           <div className="w-full max-w-xs">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
-            <p className="text-gray-600 mb-8">Join us to start learning</p>
+            {step === 1 ? (
+              <>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
+                <p className="text-gray-600 mb-8">Join us to start learning</p>
 
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="Your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
+                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      placeholder="Your name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="Your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input
+                      type="email"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      placeholder="Your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
 
-              <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent pr-10"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-10 text-gray-500"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <MdRemoveRedEye size={20} /> : <MdOutlineRemoveRedEye size={20} />}
-                </button>
-              </div>
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent pr-10"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-10 text-gray-500"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <MdRemoveRedEye size={20} /> : <MdOutlineRemoveRedEye size={20} />}
+                    </button>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
-                <div className="flex gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        className={`flex-1 py-2 rounded-xl border ${
+                          role === 'student'
+                            ? 'border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold'
+                            : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                        onClick={() => setRole("student")}
+                      >
+                        Student
+                      </button>
+                      <button
+                        type="button"
+                        className={`flex-1 py-2 rounded-xl border ${
+                          role === 'educator'
+                            ? 'border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold'
+                            : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                        onClick={() => setRole("educator")}
+                      >
+                        Educator
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-indigo-700 hover:to-purple-700 transition shadow-md"
+                    onClick={handleSignUp}
+                    disabled={loading}
+                  >
+                    {loading ? <ClipLoader size={20} color="white" /> : "Sign Up & Verify Email"}
+                  </button>
+
+                  <div className="relative flex items-center justify-center my-6">
+                    <div className="absolute inset-0 border-t border-gray-300"></div>
+                    <div className="relative bg-white px-4 text-sm text-gray-500">Or continue with</div>
+                  </div>
+
                   <button
                     type="button"
-                    className={`flex-1 py-2 rounded-xl border ${
-                      role === 'student'
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                    onClick={() => setRole("student")}
+                    className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-xl py-3 text-gray-700 hover:bg-gray-50 transition"
+                    onClick={googleSignUp}
                   >
-                    Student
+                    <img src={googleIcon} alt="Google" className="w-5 h-5" />
+                    <span>Sign up with Google</span>
+                  </button>
+
+                  <div className="text-center text-gray-600">
+                    Already have an account?{' '}
+                    <button
+                      className="text-indigo-600 hover:text-indigo-800 font-medium"
+                      onClick={() => navigate("/login")}
+                    >
+                      Login
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              /* Step 2: Email OTP Verification */
+              <motion.div
+                className="space-y-6"
+                variants={fadeIn}
+                initial="hidden"
+                animate="visible"
+              >
+                <div className="flex justify-center">
+                  <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                    <div className="text-xl font-bold">OTP</div>
+                  </div>
+                </div>
+
+                <h2 className="text-2xl font-bold text-center text-gray-800">
+                  Verify Your Email
+                </h2>
+
+                <p className="text-gray-600 text-center text-sm">
+                  We sent a 4-digit verification code to <span className="font-semibold text-gray-800">{email}</span>.
+                </p>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Verification Code
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center text-2xl tracking-widest font-mono text-indigo-600"
+                    placeholder="• • • •"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    required
+                  />
+                  {otp && (
+                    <p className="text-xs text-indigo-600 text-center mt-2 font-medium">
+                      ✓ Code auto-filled: <span className="font-bold tracking-wider">{otp}</span>
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-indigo-700 hover:to-purple-700 transition shadow-md"
+                  disabled={loading}
+                  onClick={handleVerifyOtp}
+                >
+                  {loading ? <ClipLoader size={20} color="white" /> : "Verify & Complete Registration"}
+                </button>
+
+                <div className="flex justify-between items-center text-sm">
+                  <button
+                    type="button"
+                    className="text-indigo-600 hover:text-indigo-800 font-medium"
+                    onClick={handleResendOtp}
+                    disabled={loading}
+                  >
+                    Resend Code
                   </button>
                   <button
                     type="button"
-                    className={`flex-1 py-2 rounded-xl border ${
-                      role === 'educator'
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                    onClick={() => setRole("educator")}
+                    className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
+                    onClick={() => setStep(1)}
                   >
-                    Educator
+                    <FaArrowLeft size={12} /> Edit Details
                   </button>
                 </div>
-              </div>
-
-              <button
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-indigo-700 hover:to-purple-700 transition shadow-md"
-                onClick={handleSignUp}
-                disabled={loading}
-              >
-                {loading ? <ClipLoader size={20} color="white" /> : "Sign Up"}
-              </button>
-
-              <div className="relative flex items-center justify-center my-6">
-                <div className="absolute inset-0 border-t border-gray-300"></div>
-                <div className="relative bg-white px-4 text-sm text-gray-500">Or continue with</div>
-              </div>
-
-              <button
-                type="button"
-                className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-xl py-3 text-gray-700 hover:bg-gray-50 transition"
-                onClick={googleSignUp}
-              >
-                <img src={googleIcon} alt="Google" className="w-5 h-5" />
-                <span>Sign up with Google</span>
-              </button>
-
-              <div className="text-center text-gray-600">
-                Already have an account?{' '}
-                <button
-                  className="text-indigo-600 hover:text-indigo-800 font-medium"
-                  onClick={() => navigate("/login")}
-                >
-                  Login
-                </button>
-              </div>
-            </form>
+              </motion.div>
+            )}
           </div>
         </div>
 
@@ -200,7 +329,7 @@ function SignUp() {
         </div>
       </div>
     </motion.div>
-  )
+  );
 }
 
-export default SignUp
+export default SignUp;

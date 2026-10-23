@@ -10,6 +10,7 @@ function getCreatorCourse() {
   return (
     useEffect(()=>{
       const creatorCourses=async()=>{
+        if (!userData || userData?.user?.role !== "educator") return;
         try {
           const res=await axios.get(serverUrl+"/api/course/getcreator",{withCredentials:true});
           dispatch(setCreatorCourseData(res.data.courses));
@@ -18,7 +19,7 @@ function getCreatorCourse() {
         }
       }
       creatorCourses();
-    },[])
+    },[userData, dispatch])
   )
 }
 

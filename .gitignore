@@ -41,3 +41,15 @@ selenium_*.py
 selenium_test.py
 test_screenshots/
 
+
+# Local test scripts & screenshots
+test_*.py
+debug_*.py
+recapture_*.py
+verify_*.py
+*.png
+screenshots/
+backend/seed_*.js
+backend/sync_*.js
+backend/enroll_*.js
+

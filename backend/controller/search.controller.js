@@ -45,7 +45,7 @@ export const searchWithAi= async(req,res)=>{
 
       // Use the GoogleGenAI instance with models.generateContent
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.8-flash",
         contents: [{ parts: [{ text: input + "\n" + prompt }] }],
         generationConfig: {
           temperature: 0.2,
@@ -53,8 +53,8 @@ export const searchWithAi= async(req,res)=>{
         }
       });
 
-      keyword = response.candidates[0].content.parts[0].text.trim();
-      // console.log("Generated keyword:", keyword);
+      keyword = (response.text || response.candidates[0].content.parts[0].text).trim();
+      console.log("Gemini AI generated keyword:", keyword);
     } catch (aiError) {
       console.error("Error with Gemini API:", aiError);
       // If the API call fails, use the input itself as the keyword or a random fallback keyword

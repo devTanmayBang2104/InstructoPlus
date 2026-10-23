@@ -19,8 +19,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    required: true,
-    enum: ["student", "educator"],
+    enum: ["student", "educator", "admin"],
     default: "student",
     required: true,
   },
@@ -43,6 +42,22 @@ const userSchema = new mongoose.Schema({
   isOtpVerified: {
     type: Boolean,
     default: false,
+  },
+  isAccountVerified: {
+    type: Boolean,
+    default: false,
+  },
+  lastLogoutAt: {
+    type: Date,
+    default: null,
+  },
+  failedLoginAttempts: {
+    type: Number,
+    default: 0,
+  },
+  lockUntil: {
+    type: Date,
+    default: null,
   },
 }, {
   timestamps: true,

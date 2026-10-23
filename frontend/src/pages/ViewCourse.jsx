@@ -218,7 +218,8 @@ function ViewCourse() {
         { withCredentials: true }
       );
 
-      const isMockOrder = orderData.data?.order?.isMock || !import.meta.env.VITE_RAZORPAY_KEY_ID;
+      const rzpKey = orderData.data?.razorpayKey || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_Tn4utk1r0Y1pHH";
+      const isMockOrder = orderData.data?.order?.isMock;
 
       // If in development mode or mock order, enroll directly
       if (isMockOrder || !window.Razorpay) {
@@ -240,7 +241,7 @@ function ViewCourse() {
 
       try {
         const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          key: rzpKey,
           amount: orderData.data.order.amount,
           currency: "INR",
           name: "InstructoPlus",

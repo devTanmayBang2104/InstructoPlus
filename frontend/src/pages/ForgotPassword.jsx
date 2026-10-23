@@ -24,6 +24,9 @@ function ForgotPassword() {
     try {
       const result = await axios.post(`${serverUrl}/api/auth/sendotp`, { email }, { withCredentials: true });
       setStep(2);
+      if (result.data.devOtp) {
+        setOtp(result.data.devOtp);
+      }
       toast.success(result.data.message);
       setLoading(false);
     } catch (error) {
@@ -51,12 +54,20 @@ function ForgotPassword() {
       if (newPassword !== conPassword) {
         return toast.error("Passwords do not match");
       }
-      const result = await axios.post(`${serverUrl}/api/auth/resetpassword`, { email, password: newPassword }, { withCredentials: true });
+      const result = await axios.post(
+        `${serverUrl}/api/auth/resetpassword`,
+        { email, password: newPassword, newPassword: newPassword },
+        { withCredentials: true }
+      );
       toast.success(result.data.message);
       setLoading(false);
       navigate("/login");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error resetting password");
+      const errMsg =
+        error.response?.data?.errors?.[0] ||
+        error.response?.data?.message ||
+        "Error resetting password";
+      toast.error(errMsg);
       setLoading(false);
     }
   };
@@ -144,12 +155,17 @@ function ForgotPassword() {
               </label>
               <input
                 type="text"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center text-xl tracking-widest"
-                placeholder="1234"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center text-2xl tracking-widest font-mono text-indigo-600"
+                placeholder="• • • •"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
                 required
               />
+              {otp && (
+                <p className="text-xs text-indigo-600 text-center mt-2 font-medium">
+                  ✓ Code auto-filled: <span className="font-bold tracking-wider">{otp}</span>
+                </p>
+              )}
             </div>
 
             <button

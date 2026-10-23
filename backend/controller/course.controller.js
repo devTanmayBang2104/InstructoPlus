@@ -2,6 +2,9 @@ import Course from "../model/course.Model.js";
 import uploadOnCloudinary from "../config/cloudinary.js";
 import Lecture from "../model/lecture.Model.js";
 import User from "../model/user.Model.js";
+import Review from "../model/review.Model.js";
+import Enrollment from "../model/enrollment.Model.js";
+import CourseProgress from "../model/courseProgress.Model.js";
 import { getYoutubeVideoId, getYoutubePlaylistId, fetchYoutubeVideoDetails, fetchYoutubePlaylistDetails } from '../utils/youtubeApi.js';
 
 export const createCourse = async (req, res) => {
@@ -211,13 +214,26 @@ export const getCourseById = async (req, res) => {
 export const removeCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
-    let course = await Course.findById(courseId); // Changed const to let
+    let course = await Course.findById(courseId);
     if (!course) {
       return res.status(400).json({
         success: false,
         message: "Course not found",
       });
     }
+
+    // Explicit cascading cleanup for relational integrity
+    await Promise.all([
+      Lecture.deleteMany({ courseId }),
+      Review.deleteMany({ course: courseId }),
+      CourseProgress.deleteMany({ courseId }),
+      Enrollment.deleteMany({ courseId }),
+      User.updateMany(
+        { enrolledCourses: courseId },
+        { $pull: { enrolledCourses: courseId } }
+      ),
+    ]);
+
     course = await Course.findByIdAndDelete(courseId);
     return res.status(200).json({
       success: true,
@@ -227,7 +243,7 @@ export const removeCourse = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "error while deleting course",
-      error,
+      error: error.message || error,
     });
   }
 };
@@ -314,10 +330,11 @@ export const createLectue = async (req, res) => {
       if (videoResult && videoResult.url) {
         const lecture = await Lecture.create({
           lectureTitle,
-          description,
+          description: description || "",
           videoUrl: videoResult.url,
-          duration: videoResult.duration,
-          isPreviewFree: isPreviewFree || false,
+          duration: videoResult.duration ? `${Math.round(videoResult.duration)}s` : "PT0S",
+          isYoutubeVideo: false,
+          isPreviewFree: isPreviewFree === "true" || isPreviewFree === true,
           courseId,
         });
         newLectures.push(lecture);
@@ -331,8 +348,8 @@ export const createLectue = async (req, res) => {
       // Create a lecture without video if neither YouTube link nor file upload is provided
       const lecture = await Lecture.create({
         lectureTitle,
-        description,
-        isPreviewFree: isPreviewFree || false,
+        description: description || "",
+        isPreviewFree: isPreviewFree === "true" || isPreviewFree === true,
         courseId,
       });
       newLectures.push(lecture);
@@ -517,28 +534,46 @@ export const editLecuture = async (req, res) => {
   }
 };
 
-export const removeLecture=async(req,res)=>{
+export const removeLecture = async (req, res) => {
   try {
-    const {lectureId}=req.params
-    const lecture=await Lecture.findByIdAndDelete(lectureId);
-    if(!lecture){
+    const { lectureId } = req.params;
+    const lecture = await Lecture.findById(lectureId);
+    if (!lecture) {
       return res.status(400).json({
-        success:false,
-        message:"Lecture not found"
-      })
+        success: false,
+        message: "Lecture not found",
+      });
     }
+
+    const courseId = lecture.courseId;
+
+    // Explicitly decouple references
+    await Promise.all([
+      Course.findByIdAndUpdate(courseId, { $pull: { lectures: lectureId } }),
+      CourseProgress.updateMany(
+        { courseId },
+        {
+          $pull: {
+            completedLectures: lectureId,
+            lectureProgress: { lectureId },
+          },
+        }
+      ),
+      Lecture.findByIdAndDelete(lectureId),
+    ]);
+
     return res.status(200).json({
-      success:true,
-      message:"Lecture deleted successfully"
-    })
+      success: true,
+      message: "Lecture deleted successfully",
+    });
   } catch (error) {
     return res.status(500).json({
-      success:false,
-      message:"error while deleting lecture",
-      error
-    })
+      success: false,
+      message: "error while deleting lecture",
+      error: error.message || error,
+    });
   }
-}
+};
 export const addDocuments=async(req,res)=>{
   try{
     const {lectureId}=req.params
