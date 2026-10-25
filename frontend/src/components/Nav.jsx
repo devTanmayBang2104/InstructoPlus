@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import logo from "../assets/logo.jpg";
 import { IoMdPerson, IoMdAdd, IoMdNotifications } from "react-icons/io";
 import { GiHamburgerMenu, GiSplitCross } from "react-icons/gi";
+import { FaSun, FaMoon } from "react-icons/fa";
+import { useTheme } from "../context/ThemeContext.jsx";
 import { useNavigate } from "react-router-dom";
 import { serverUrl } from "../App";
 import axios from "axios";
@@ -27,6 +29,7 @@ function Nav() {
   const notificationRef = useRef(null);
   const addRef = useRef(null);
   const { fadeIn } = useContext(AnimationContext);
+  const { theme, toggleTheme, isDark } = useTheme();
 
   // Fetch unread notification count
   useEffect(() => {
@@ -171,7 +174,7 @@ function Nav() {
   };
 
   return (
-    <nav className="fixed w-full bg-white shadow-sm z-50 mb-16">
+    <nav className="fixed w-full bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm z-50 mb-16 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
@@ -194,6 +197,19 @@ function Nav() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Dark Mode Toggle */}
+            <motion.button
+              id="theme-toggle-btn"
+              data-testid="theme-toggle"
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              onClick={toggleTheme}
+              aria-label="Toggle dark mode"
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-amber-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none flex items-center justify-center h-10 w-10 shadow-xs cursor-pointer border border-gray-200 dark:border-gray-700"
+            >
+              {isDark ? <FaSun className="h-5 w-5 text-amber-400" /> : <FaMoon className="h-5 w-5 text-gray-700 dark:text-gray-200" />}
+            </motion.button>
             {userData && userData?.user?.role === "educator" && (
               <div className="relative" ref={addRef}>
                 <motion.button
@@ -482,10 +498,21 @@ function Nav() {
             animate="visible"
             exit="exit"
             variants={mobileMenuVariants}
-            className="md:hidden fixed inset-y-0 right-0 w-4/5 bg-white z-40 shadow-xl"
+            className="md:hidden fixed inset-y-0 right-0 w-4/5 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 z-40 shadow-xl transition-colors"
           >
             <div className="h-full flex flex-col py-8 px-6">
-              <div className="flex justify-end mb-8">
+              <div className="flex justify-between items-center mb-8">
+                <motion.button
+                  id="mobile-theme-toggle-btn"
+                  data-testid="mobile-theme-toggle"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={toggleTheme}
+                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-amber-400 flex items-center gap-2 px-3 text-xs font-semibold border border-gray-200 dark:border-gray-700 cursor-pointer"
+                >
+                  {isDark ? <FaSun className="h-4 w-4 text-amber-400" /> : <FaMoon className="h-4 w-4 text-gray-700" />}
+                  <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
+                </motion.button>
                 <motion.button
                   whileHover={{ rotate: 90 }}
                   whileTap={{ scale: 0.9 }}

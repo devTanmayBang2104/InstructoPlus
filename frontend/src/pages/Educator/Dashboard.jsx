@@ -60,16 +60,14 @@ function Dashboard() {
 
   return (
     <>
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 p-6">
-
-
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 dark:from-slate-950 dark:to-slate-900 text-gray-900 dark:text-gray-100 p-6 transition-colors">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <FaArrowLeft
-            className="text-gray-600 cursor-pointer"
+            className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white cursor-pointer transition"
             onClick={() => navigate("/")}
           />
-          <h1 className="text-2xl font-bold text-gray-800">Educator Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Educator Dashboard</h1>
         </div>
 
         {/* Stats Cards */}
@@ -79,53 +77,43 @@ function Dashboard() {
           initial="hidden"
           animate="visible"
         >
-          <div className="bg-white rounded-xl shadow-md p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+          <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-md p-6 flex items-center gap-4 transition-colors">
+            <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-950/80 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
               <FaMoneyBillWave size={20} />
             </div>
             <div>
-              <p className="text-gray-500 text-sm">Total Earnings</p>
-              <p className="text-2xl font-bold text-gray-800">₹{stats.totalEarnings.toLocaleString()}</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Total Earnings</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">₹{stats.totalEarnings.toLocaleString()}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+          <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-md p-6 flex items-center gap-4 transition-colors">
+            <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-950/80 flex items-center justify-center text-green-600 dark:text-green-400">
               <FaUsers size={20} />
             </div>
             <div>
-              <p className="text-gray-500 text-sm">Total Students</p>
-              <p className="text-2xl font-bold text-gray-800">{stats.totalStudents}</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Total Students</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.totalStudents}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+          <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-md p-6 flex items-center gap-4 transition-colors">
+            <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-950/80 flex items-center justify-center text-blue-600 dark:text-blue-400">
               <FaBook size={20} />
             </div>
             <div>
-              <p className="text-gray-500 text-sm">Published Courses</p>
-              <p className="text-2xl font-bold text-gray-800">{stats.publishedCourses}</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Published Courses</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.publishedCourses}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+          <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-md p-6 flex items-center gap-4 transition-colors">
+            <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-950/80 flex items-center justify-center text-orange-600 dark:text-orange-400">
               <FaBook size={20} />
             </div>
             <div>
-              <p className="text-gray-500 text-sm">Draft Courses</p>
-              <p className="text-2xl font-bold text-gray-800">{stats.draftCourses}</p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
-              <FaChartLine size={20} />
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Avg. Enrollment</p>
-              <p className="text-2xl font-bold text-gray-800">{stats.enrollmentRate}/course</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Draft Courses</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.draftCourses}</p>
             </div>
           </div>
         </motion.div>
@@ -138,7 +126,7 @@ function Dashboard() {
           animate="visible"
         >
           <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="bg-white bg-opacity-20 p-2 rounded-full">
+            <div className="bg-white/20 p-2 rounded-full">
               <div className="w-24 h-24 rounded-full bg-white text-indigo-600 flex items-center justify-center text-3xl font-bold">
                 {userData?.user.name.charAt(0)}
               </div>
@@ -151,7 +139,7 @@ function Dashboard() {
                 {userData?.user.description || "Start creating amazing courses for your students!"}
               </p>
               <button
-                className="mt-4 px-6 py-3 bg-white text-indigo-600 rounded-xl font-medium hover:bg-indigo-50 transition-all"
+                className="mt-4 px-6 py-3 bg-white text-indigo-600 rounded-xl font-medium hover:bg-indigo-50 transition-all cursor-pointer"
                 onClick={() => navigate("/createcourses")}
               >
                 Create New Course
@@ -162,16 +150,16 @@ function Dashboard() {
 
         {/* Recent Courses */}
         <motion.div
-          className="bg-white rounded-2xl shadow-md p-6"
+          className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-md p-6 transition-colors"
           variants={fadeIn}
           initial="hidden"
           animate="visible"
           transition={{ delay: 0.2 }}
         >
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-gray-800">Your Recent Courses</h2>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Your Recent Courses</h2>
             <button
-              className="text-indigo-600 hover:text-indigo-800 font-medium"
+              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
               onClick={() => navigate("/courses")}
             >
               View All
@@ -187,10 +175,10 @@ function Dashboard() {
               {recentCourses.map((course, index) => (
                 <div
                   key={index}
-                  className="border rounded-xl overflow-hidden hover:shadow-md transition-all cursor-pointer"
+                  className="border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-800/50 rounded-xl overflow-hidden hover:shadow-md transition-all cursor-pointer"
                   onClick={() => navigate(`/editcourses/${course._id}`)}
                 >
-                  <div className="h-40 bg-gray-200 relative">
+                  <div className="h-40 bg-gray-200 dark:bg-slate-800 relative">
                     {course.thumbnail ? (
                       <img
                         src={course.thumbnail}
@@ -198,26 +186,26 @@ function Dashboard() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-indigo-100 flex items-center justify-center">
+                      <div className="w-full h-full bg-indigo-100 dark:bg-indigo-950/60 flex items-center justify-center">
                         <FaBook className="text-indigo-400 text-3xl" />
                       </div>
                     )}
-                    <div className="absolute top-3 right-3 px-2 py-1 bg-white rounded-full text-xs font-medium">
+                    <div className="absolute top-3 right-3 px-2 py-1 bg-white/90 dark:bg-slate-900/90 text-gray-800 dark:text-gray-200 rounded-full text-xs font-medium">
                       {course.isPublished ? "Published" : "Draft"}
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="font-bold text-gray-800 truncate">{course.title}</h3>
+                    <h3 className="font-bold text-gray-800 dark:text-gray-100 truncate">{course.title}</h3>
                     <div className="flex justify-between items-center mt-2">
-                      <span className="text-indigo-600 font-semibold">₹{course.price}</span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-indigo-600 dark:text-indigo-400 font-semibold">₹{course.price}</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         {course?.enrolledStudents?.length || 0} students
                       </span>
                     </div>
                     <button
-                      className="mt-4 w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+                      className="mt-4 w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition cursor-pointer"
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent navigating to editcourses
+                        e.stopPropagation();
                         navigate(`/enrolledstudents/${course._id}`);
                       }}
                     >
@@ -230,10 +218,10 @@ function Dashboard() {
           ) : (
             <div className="text-center py-10">
               <div className="text-5xl mb-4">📚</div>
-              <h3 className="text-lg font-medium text-gray-700 mb-2">No courses yet</h3>
-              <p className="text-gray-500 mb-4">Create your first course to get started</p>
+              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">No courses yet</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">Create your first course to get started</p>
               <button
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition cursor-pointer"
                 onClick={() => navigate("/createcourses")}
               >
                 Create Course

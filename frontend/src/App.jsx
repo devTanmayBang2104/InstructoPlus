@@ -78,7 +78,7 @@ function App() {
 
   return (
     <AnimationContext.Provider value={animationVariants}>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-gray-100 transition-colors duration-200">
         <Nav />
         <main className="flex-grow pt-16">
           <AnimatePresence mode="wait">

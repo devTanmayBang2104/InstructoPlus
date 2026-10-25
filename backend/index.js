@@ -11,6 +11,7 @@ import reviewRouter from "./routes/reviewRoute.js";
 import announcementRouter from "./routes/announcement.route.js"; // Import announcement router
 import notificationRouter from "./routes/notification.route.js"; // Import notification router
 import progressRouter from "./routes/courseProgress.route.js"; // Import progress router
+import noteRouter from "./routes/note.route.js"; // Import personal notes & bookmarks router
 import { globalLimiter } from "./middleware/rateLimiter.js";
 import sanitizeInput from "./middleware/sanitize.js";
 import "./config/redis.js"; // Redis cache client initialization
@@ -54,6 +55,7 @@ app.use("/api/review", reviewRouter);
 app.use("/api", announcementRouter); // Use announcement router
 app.use("/api", notificationRouter); // Use notification router
 app.use("/api/progress", progressRouter); // Mount progress router
+app.use("/api/notes", noteRouter); // Mount personal notes & bookmarks router
 
 app.get("/", (req, res) => {
   res.send("Hello from backend");
